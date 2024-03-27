@@ -1,0 +1,5 @@
+server/
+patches/
+forge-server-template-*/
+nomi-ceu-modern-*.zip.d
+*.log
