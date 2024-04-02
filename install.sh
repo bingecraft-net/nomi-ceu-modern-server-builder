@@ -1,9 +1,9 @@
 set -e
 
 # expect mods to be downloaded already
-FROM_MODS=$HOME/.local/share/PrismLauncher/instances/Nomi-CEu-Modern-0.1.3b/minecraft/mods
+FROM_MODS=ncm-0.1.4-mods.zip
 
-[[ ! -d $FROM_MODS ]] && {
+[[ ! -a $FROM_MODS ]] && {
   echo missing $FROM_MODS
   false
 }
@@ -21,30 +21,13 @@ FORGE_VERSION=1.20.1-47.2.21
 }
 
 # download pack
-[[ ! -d nomi-ceu-modern-0.1.3b.zip.d ]] && {
+[[ ! -d nomi-ceu-modern-0.1.4.zip.d ]] && {
   curl -sL \
     --fail-with-body \
-    -o nomi-ceu-modern-0.1.3b.zip \
-    https://github.com/Nomi-CEu/Nomi-CEu-Modern/releases/download/v0.1.3b/Nomi-CEu-Modern-0.1.3b.zip
-  unzip -d nomi-ceu-modern-0.1.3b.zip.d nomi-ceu-modern-0.1.3b.zip \
-  ; rm nomi-ceu-modern-0.1.3b.zip
-}
-
-# download patches
-mkdir -p patches
-
-[[ ! -a patches/effortlessbuilding-1.20.1-3.7-all.jar ]] && {
-  curl -sL \
-    --fail-with-body \
-    -o patches/effortlessbuilding-1.20.1-3.7-all.jar \
-    https://cdn.modrinth.com/data/DYtfQEYj/versions/BzwWTsxS/effortlessbuilding-1.20.1-3.7-all.jar
-}
-
-[[ ! -a patches/miniutilities-4.0.1.jar ]] && {
-  curl -sL \
-    --fail-with-body \
-    -o patches/miniutilities-4.0.1.jar \
-    https://github.com/Nomi-CEu/Nomi-CEu-Modern/raw/main/mods/miniutilities-4.0.1.jar
+    -o nomi-ceu-modern-0.1.4.zip \
+    https://github.com/Nomi-CEu/Nomi-CEu-Modern/releases/download/v0.1.4/Nomi-CEu-Modern-0.1.4.zip
+  unzip -d nomi-ceu-modern-0.1.4.zip.d nomi-ceu-modern-0.1.4.zip \
+  ; rm nomi-ceu-modern-0.1.4.zip
 }
 
 # copy forge server template
@@ -54,18 +37,10 @@ cp -r forge-server-template-$FORGE_VERSION server
 sed -si 's/"$@"$/nogui "$@"/' server/run.sh
 
 # install pack to server
-cp -r nomi-ceu-modern-0.1.3b.zip.d/overrides/* server
+cp -r nomi-ceu-modern-0.1.4.zip.d/overrides/* server
 
 # install pre-downloaded mods to server
-cp -r $FROM_MODS server
-
-# downgrade effortlessbuilding
-cp patches/effortlessbuilding-1.20.1-3.7-all.jar server/mods
-rm server/mods/effortlessbuilding-1.20.1-3.8-all.jar
-
-# patch miniutilities
-cp patches/miniutilities-4.0.1.jar server/mods
-rm server/mods/miniutilities-4.0.0.jar
+unzip -d server/mods ncm-0.1.4-mods.zip
 
 # remove client-side prism instance mods
 rm \
