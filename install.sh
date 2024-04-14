@@ -4,16 +4,21 @@ set -e
 PACK_VERSION=v6
 PACK_ZIP=nomi-ceu-modern-$PACK_VERSION.zip
 PACK_DIR=nomi-ceu-modern-$PACK_VERSION.d
-PACK_MODS_ZIP=nomi-ceu-modern-$PACK_VERSION-mods.zip
 [[ ! -d $PACK_DIR ]] && {
   curl -sLO https://github.com/bingecraft-net/nomi-ceu-modern-zip/releases/download/$PACK_VERSION/$PACK_ZIP
   unzip -d $PACK_DIR $PACK_ZIP
   rm $PACK_ZIP
 }
 
+PACK_MODS_ZIP=nomi-ceu-modern-$PACK_VERSION-mods.zip
+PACK_MODS_ZIP_FROM=$HOME/.local/share/PrismLauncher/instances/nomi-ceu-modern-v6/minecraft/mods
 [[ ! -a $PACK_MODS_ZIP ]] && {
-  echo missing $PACK_MODS_ZIP 
-  false
+  [[ -d $PACK_MODS_ZIP_FROM ]] && {
+    zip -jr $PACK_MODS_ZIP $PACK_MODS_ZIP_FROM
+  } || {
+    echo missing $PACK_MODS_ZIP 
+    false
+  }
 }
 
 # install forge server template
@@ -52,8 +57,6 @@ cp server.properties server
 cp whitelist.json server
 
 # link backups
-ln -s ../../nomi-ceu-modern-backups server/backups
-
-# unpack latest world backup
-backup=$(ls -Av server/backups/*.zip | tail -1)
-unzip -d server $backup
+BACKUPS=../nomi-ceu-modern-backups
+mkdir -p $BACKUPS
+ln -s ../$BACKUPS server/backups
