@@ -1,5 +1,6 @@
 server/
 patches/
 forge-server-template-*/
-nomi-ceu-modern-*.zip.d
+nomi-ceu-modern-*-mods.zip
+nomi-ceu-modern-*.d
 *.log

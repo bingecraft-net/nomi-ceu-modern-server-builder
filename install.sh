@@ -1,10 +1,18 @@
 set -e
 
-# expect mods to be downloaded already
-FROM_MODS=ncm-0.1.4-mods.zip
+# download pack and expect mods to be downloaded already
+PACK_VERSION=v6
+PACK_ZIP=nomi-ceu-modern-$PACK_VERSION.zip
+PACK_DIR=nomi-ceu-modern-$PACK_VERSION.d
+PACK_MODS_ZIP=nomi-ceu-modern-$PACK_VERSION-mods.zip
+[[ ! -d $PACK_DIR ]] && {
+  curl -sLO https://github.com/bingecraft-net/nomi-ceu-modern-zip/releases/download/$PACK_VERSION/$PACK_ZIP
+  unzip -d $PACK_DIR $PACK_ZIP
+  rm $PACK_ZIP
+}
 
-[[ ! -a $FROM_MODS ]] && {
-  echo missing $FROM_MODS
+[[ ! -a $PACK_MODS_ZIP ]] && {
+  echo missing $PACK_MODS_ZIP 
   false
 }
 
@@ -20,16 +28,6 @@ FORGE_VERSION=1.20.1-47.2.21
   ; rm forge-$FORGE_VERSION-installer.jar
 }
 
-# download pack
-[[ ! -d nomi-ceu-modern-0.1.4.zip.d ]] && {
-  curl -sL \
-    --fail-with-body \
-    -o nomi-ceu-modern-0.1.4.zip \
-    https://github.com/Nomi-CEu/Nomi-CEu-Modern/releases/download/v0.1.4/Nomi-CEu-Modern-0.1.4.zip
-  unzip -d nomi-ceu-modern-0.1.4.zip.d nomi-ceu-modern-0.1.4.zip \
-  ; rm nomi-ceu-modern-0.1.4.zip
-}
-
 # copy forge server template
 cp -r forge-server-template-$FORGE_VERSION server
 
@@ -37,12 +35,25 @@ cp -r forge-server-template-$FORGE_VERSION server
 sed -si 's/"$@"$/nogui "$@"/' server/run.sh
 
 # install pack to server
-cp -r nomi-ceu-modern-0.1.4.zip.d/overrides/* server
+cp -r $PACK_DIR/overrides/* server
 
 # install pre-downloaded mods to server
-unzip -d server/mods ncm-0.1.4-mods.zip
+unzip -nd server/mods $PACK_MODS_ZIP
 
 # remove client-side prism instance mods
 rm \
-  server/mods/citresewn-1.20.1-5.jar \
-  server/mods/oculus-mc1.20.1-1.6.15a.jar
+  server/mods/citresewn-*.jar \
+  server/mods/emi-*.jar \
+  server/mods/emi_loot-*.jar \
+  server/mods/oculus-*.jar
+
+# install default server properties and whitelist
+cp server.properties server
+cp whitelist.json server
+
+# link backups
+ln -s ../../nomi-ceu-modern-backups server/backups
+
+# unpack latest world backup
+backup=$(ls -Av server/backups/*.zip | tail -1)
+unzip -d server $backup
